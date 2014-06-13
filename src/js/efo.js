@@ -3,7 +3,6 @@
  (c) 2014 Hiroaki Nakamura
  MIT License
  */
-
 (function($, undefined) {
   $.fn.japaneseInputChange = function(selector, delay, handler) {
     var readyToSetTimer = true,
@@ -98,7 +97,6 @@
     }
     return str;
   };
-
 })(this);
 (function (window, $, undefined){
   /*
