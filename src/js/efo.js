@@ -113,30 +113,30 @@
     EFO_IS_AUTO_ADD:"data-isAutoAdd"
   };
   Efo.prototype.init = function (){
-    var _this = this;
+    var self = this;
     var _inputs = $("input ,select, textarea");
     var _count = 0;
     var _isAllcrawl = true;
     var _ui = Utils.getUserInfo();
     var _time = _ui.isAndroid ? 1000 : 500;//項目自動入力されるまでの待機時間
 
-    _this.nodes = [];
-    _this.efofuncs = new EfoAnalysis();
-    _this.isBodyEfoError;
-    _this.analysis = analysis;
-    _this.addNode = addNode;
-    _this.crawlAnalysis = crawlAnalysis;
-    _this.removeNodeByNum = removeNodeByNum;
-    _this.removeNodeByKey = removeNodeByKey;
-    _this.dispose = dispose;
-    _this.autoAddNode = autoAddNode;
+    self.nodes = [];
+    self.efofuncs = new EfoAnalysis();
+    self.isBodyEfoError;
+    self.analysis = analysis;
+    self.addNode = addNode;
+    self.crawlAnalysis = crawlAnalysis;
+    self.removeNodeByNum = removeNodeByNum;
+    self.removeNodeByKey = removeNodeByKey;
+    self.dispose = dispose;
+    self.autoAddNode = autoAddNode;
 
-    EventDispatcher.initialize(_this);//イベント機能実装
+    EventDispatcher.initialize(self);//イベント機能実装
     init();
 
     function init(){
       var regexp = new RegExp(Efo.classNames.EFO_ATTR_SERVER_ERROR);
-      _this.isBodyEfoError = !!(($("body").attr("class") + "").search(regexp) >= 0);
+      self.isBodyEfoError = !!(($("body").attr("class") + "").search(regexp) >= 0);
       setTimeout(function (){
         autoAddNode();
       }, _time);
@@ -144,18 +144,18 @@
 
     //ノード解析終了コールバック
     function onAnalyzeCallback(efonode){
-      _this.dispatchEvent({type: Efo.events.EFO_NODE_ANALYSIS_COMPLETE, isClear: efonode.isClear, errorStrs: efonode.errorStrs, node: efonode});
+      self.dispatchEvent({type: Efo.events.EFO_NODE_ANALYSIS_COMPLETE, isClear: efonode.isClear, errorStrs: efonode.errorStrs, node: efonode});
       //クロールしてからanalysisする
       if (_isAllcrawl) {
         _count++;
-        if (_count >= _this.nodes.length) {
+        if (_count >= self.nodes.length) {
           _count = 0;
-          _this.analysis();
+          self.analysis();
           _isAllcrawl = false;
         }
       }
       else {
-        _this.analysis();
+        self.analysis();
       }
     }
 
@@ -178,7 +178,7 @@
       _keys.each(function (i, value){
         _node = _addNode(value);
       });
-      _this.dispatchEvent({type: Efo.events.EFO_AUTOADD_COMPLETE});
+      self.dispatchEvent({type: Efo.events.EFO_AUTOADD_COMPLETE});
     }
 
     function _addNode(value, is){
@@ -201,7 +201,7 @@
       if (!_funcs[0] == "") {
         Utils.trace("add @" + _key);
         _node = new EfoNode(_nodeInfo, _is, onAnalyzeCallback);
-        _this.nodes.push(_node);
+        self.nodes.push(_node);
         return _node;
       }
       else return new Error("no funcs");
@@ -211,7 +211,7 @@
       var _isClear = true;
       var _nodeData = [];
       var _falseNum = 0;
-      $.each(_this.nodes, function (i, value){
+      $.each(self.nodes, function (i, value){
         //表示の可否
         var _isDisplay = true;
         var _tgt = value.inputs.filter("["+Efo.attrNames.EFO_ATTR_FUNCS+"]");
@@ -229,7 +229,7 @@
       });
 
       //イベント発信
-      _this.dispatchEvent({type: Efo.events.EFO_ANALYSIS_COMPLETE, isClear: _isClear, data: {nodes: _nodeData, total: _nodeData.length, failed: _falseNum}});
+      self.dispatchEvent({type: Efo.events.EFO_ANALYSIS_COMPLETE, isClear: _isClear, data: {nodes: _nodeData, total: _nodeData.length, failed: _falseNum}});
     }
 
     /*
@@ -239,7 +239,7 @@
     function crawlAnalysis(isErrorOutput){
       isErrorOutput = !!isErrorOutput;
       _isAllcrawl = true;
-      $.each(_this.nodes, function (i, value){
+      $.each(self.nodes, function (i, value){
         value.analysis(isErrorOutput);
       });
     }
@@ -248,20 +248,20 @@
      消去：番号
      */
     function removeNodeByNum(num){
-      _this.nodes[num].dispose();
-      //_this.views[num].removeEventListener("onHaveSubQChange", _this.f_onHaveSubQChange);
-      _this.nodes.splice(num, 1);
+      self.nodes[num].dispose();
+      //self.views[num].removeEventListener("onHaveSubQChange", self.f_onHaveSubQChange);
+      self.nodes.splice(num, 1);
     }
 
     /*
      消去：key
      */
     function removeNodeByKey(key){
-      var _this = this;
-      $.each(_this.nodes, function (i, value){
+      var self = this;
+      $.each(self.nodes, function (i, value){
         if (nodes.key == key) {
-          _this.nodes[i].dispose();
-          _this.nodes.splice(i, 1);
+          self.nodes[i].dispose();
+          self.nodes.splice(i, 1);
           return false;
         }
       });
@@ -270,7 +270,7 @@
     /*
      */
     function dispose(){
-      $.each(_this.nodes, function (i, value){
+      $.each(self.nodes, function (i, value){
         value.dispose();
       });
     }
@@ -285,29 +285,29 @@
    * callback      コールバックファンクション
    * */
   EfoNode.prototype.init = function (nodeInfo, is, callback){
-    var _this = this;
+    var self = this;
     var _count = 0;
     var _ana = window.efo.efofuncs;
     var _errorStrNode;
-    _this.funcs = nodeInfo.funcs;
-    _this.inputs = nodeInfo.inputs;
-    _this.key = nodeInfo.key;
-    _this.isDependDisplay = nodeInfo.isDependDisplay;
-    _this.options = nodeInfo.options;
-    _this.errorStrs = [];
-    _this.errorNode = $("."+Efo.classNames.EFO_ATTR_ERROR+'['+Efo.attrNames.EFO_ATTR_KEY+'="' + _this.key + '"]');
-    if (_this.errorNode) _errorStrNode = _this.errorNode.find(".efo-errorString");
-    _this.iconNode = $("."+Efo.classNames.EFO_ATTR_ICON+'['+Efo.attrNames.EFO_ATTR_KEY+'="' + _this.key + '"]');
-    _this.analysis = analysis;
-    _this.dispose = dispose;
+    self.funcs = nodeInfo.funcs;
+    self.inputs = nodeInfo.inputs;
+    self.key = nodeInfo.key;
+    self.isDependDisplay = nodeInfo.isDependDisplay;
+    self.options = nodeInfo.options;
+    self.errorStrs = [];
+    self.errorNode = $("."+Efo.classNames.EFO_ATTR_ERROR+'['+Efo.attrNames.EFO_ATTR_KEY+'="' + self.key + '"]');
+    if (self.errorNode) _errorStrNode = self.errorNode.find(".efo-errorString");
+    self.iconNode = $("."+Efo.classNames.EFO_ATTR_ICON+'['+Efo.attrNames.EFO_ATTR_KEY+'="' + self.key + '"]');
+    self.analysis = analysis;
+    self.dispose = dispose;
 
-    EventDispatcher.initialize(_this);
+    EventDispatcher.initialize(self);
     window.efo.addEventListener(Efo.events.EFO_AUTOADD_COMPLETE, onAutoAddComplete);
     setTrigger();
 
     function onAutoAddComplete(){
       if(!window.efo.isBodyEfoError){
-        _this.analysis(false);
+        self.analysis(false);
       }
       else{
         //サーバーエラーの場合走査しない。Viewの状態もままにする。
@@ -322,7 +322,7 @@
       var _tagName;
       var _type;
       var _interval = 500;
-      _this.inputs.each(function (){
+      self.inputs.each(function (){
         _tgt = $(this);
         _type = "";
         _tagName = _tgt.get(0).tagName.toLowerCase();
@@ -357,7 +357,7 @@
     * */
     function hasTransleteFunc(){
       var _isTranslate = false;
-      $.each(_this.funcs, function(i, value){
+      $.each(self.funcs, function(i, value){
         if(value === "toZenkakuKK" || value === "toHankakuEisu"){
           _isTranslate = true;
           return false;
@@ -372,13 +372,13 @@
     }
 
     function onFocus(e){
-      _this.inputs.removeClass("efo-inputError").removeClass("efo-inputFocus").addClass("efo-inputFocus");
-      //_this.dispatchEvent({type:Efo.events.EFO_NODE_FOCUS, node:_this});
+      self.inputs.removeClass("efo-inputError").removeClass("efo-inputFocus").addClass("efo-inputFocus");
+      //self.dispatchEvent({type:Efo.events.EFO_NODE_FOCUS, node:self});
     }
 
     function onBlur(e){
-      _this.inputs.removeClass("efo-inputFocus");
-      //_this.dispatchEvent({type:Efo.events.EFO_NODE_BLUR, node:_this});
+      self.inputs.removeClass("efo-inputFocus");
+      //self.dispatchEvent({type:Efo.events.EFO_NODE_BLUR, node:self});
     }
 
     /*
@@ -389,19 +389,19 @@
       if(isErrorOutput == undefined) isErrorOutput = true;
       isErrorOutput = !!isErrorOutput;
       _count = 0;
-      _this.errorStrs = [];
-      _this.isClear = true;
+      self.errorStrs = [];
+      self.isClear = true;
       var _num;
-      $.each(_this.funcs, function (i, value){
+      $.each(self.funcs, function (i, value){
         //funcの振り分け
         var _funcName;
         var _num;
         if (value.search(/[0-9]+$/) > 0) {
           _funcName = value.replace(/[0-9]+$/, "");
           _num = value.match(/[0-9]+$/) * 1;
-          _ana[_funcName](_this.inputs, anaComplete, _num);
+          _ana[_funcName](self.inputs, anaComplete, _num);
         }
-        else if (value.length) _ana[value](_this.inputs, anaComplete);
+        else if (value.length) _ana[value](self.inputs, anaComplete);
         else anaComplete();
       });
 
@@ -409,14 +409,14 @@
       function anaComplete(is, errs){
         _count++;
         if (!is) {
-          _this.isClear = false;
+          self.isClear = false;
           if (errs.length > 0 && isErrorOutput) {
             $.each(errs, function (i, value){
-              _this.errorStrs.push(value);
+              self.errorStrs.push(value);
             });
           }
         }
-        if (_count >= _this.funcs.length) {
+        if (_count >= self.funcs.length) {
           changeIconProperty();
           changeInputsProperty(isErrorOutput);
           if (isErrorOutput){
@@ -424,7 +424,7 @@
             changeErrorProperty();
             setErrorString();
           }
-          if (callback) callback(_this);
+          if (callback) callback(self);
         }
       }
     }
@@ -432,28 +432,28 @@
     //Input要素の変化
     function changeInputsProperty(isErrorOutput){
       isErrorOutput = !!isErrorOutput;
-      _this.inputs.removeClass("efo-inputError");
-      if (!_this.isClear && isErrorOutput) _this.inputs.addClass("efo-inputError");
+      self.inputs.removeClass("efo-inputError");
+      if (!self.isClear && isErrorOutput) self.inputs.addClass("efo-inputError");
     }
 
     //アイコン要素の変化
     function changeIconProperty(){
-      if (!_this.iconNode.length) return;
-      _this.iconNode.removeClass("efo-iconTrue").removeClass("efo-iconFalse");
-      if (_this.isClear) {
-        _this.iconNode.addClass("efo-iconTrue");
+      if (!self.iconNode.length) return;
+      self.iconNode.removeClass("efo-iconTrue").removeClass("efo-iconFalse");
+      if (self.isClear) {
+        self.iconNode.addClass("efo-iconTrue");
       }
       else {
-        _this.iconNode.addClass("efo-iconFalse");
+        self.iconNode.addClass("efo-iconFalse");
       }
     }
 
     //エラー要素の変化
     function changeErrorProperty(){
-      if (!_this.errorNode.length) return;
-      _this.errorNode.removeClass("efo-error");
-      if (!_this.isClear) {
-        _this.errorNode.addClass("efo-error");
+      if (!self.errorNode.length) return;
+      self.errorNode.removeClass("efo-error");
+      if (!self.isClear) {
+        self.errorNode.addClass("efo-error");
       }
     }
 
@@ -461,8 +461,8 @@
     function setErrorString(){
       if (!_errorStrNode) return;
       var _errtext = "";
-      if (!_this.isClear) {
-        $.each(_this.errorStrs, function (i, value){
+      if (!self.isClear) {
+        $.each(self.errorStrs, function (i, value){
           if (i == 0) _errtext += value;
           else _errtext += "</br>" + value;
         });
@@ -472,13 +472,13 @@
 
     //再帰：エラー文言の被りを修正
     function repetitionAna(){
-      var _leng = _this.errorStrs.length;
+      var _leng = self.errorStrs.length;
       var _is = false;
-      $.each(_this.errorStrs, function (i, value){
+      $.each(self.errorStrs, function (i, value){
         for (var j = 0; j < _leng; j++) {
           if (i == j) continue;
-          if (value == _this.errorStrs[j]) {
-            _this.errorStrs.splice(j, 1);
+          if (value == self.errorStrs[j]) {
+            self.errorStrs.splice(j, 1);
             _is = true;
             return false;
           }
@@ -491,8 +491,8 @@
      消
      */
     function dispose(){
-      var _this = this;
-      _this.inputs.unbind("change", onInputComplete).unbind("blur", onInputComplete);
+      var self = this;
+      self.inputs.unbind("change", onInputComplete).unbind("blur", onInputComplete);
       window.efo.removeEventListener(Efo.events.EFO_AUTOADD_COMPLETE, onAutoAddComplete);
     }
   };
@@ -505,15 +505,15 @@
     this.init.apply(this, arguments);
   };
   EfoAnalysis.prototype.init = function (){
-    var _this = this;
-    _this.errmsg = new EfoErrorMessage();
+    var self = this;
+    self.errmsg = new EfoErrorMessage();
   };
 
   /*
    必須チェック
    */
   EfoAnalysis.prototype.isInput = function (input, callback){
-    var _this = this;
+    var self = this;
     var _tgt;
     var _tagName;
     var _type;
@@ -540,19 +540,19 @@
       }
     });
 
-    if (_type == "text" || _type == "password") callback(_is, [_this.errmsg.noInput]);
-    else callback(_is, [_this.errmsg.noSelect]);
+    if (_type == "text" || _type == "password") callback(_is, [self.errmsg.noInput]);
+    else callback(_is, [self.errmsg.noSelect]);
   };
   /*
    メールアドレス
    */
   EfoAnalysis.prototype.mailAddress = function (input, callback){
-    var _this = this;
+    var self = this;
     var _errs = [];
     var _value = input.eq(0).val();
-    //if(_value.length == 0) _errs.push(_this.errmsg.noInput);
+    //if(_value.length == 0) _errs.push(self.errmsg.noInput);
     var _is1 = !!(_value.search(/^[\.a-zA-Z0-9_\-]+@([a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9][a-zA-Z0-9\-][a-zA-Z0-9]*$/) != -1);
-    if (!_is1) _errs.push(_this.errmsg.noMailAddress);
+    if (!_is1) _errs.push(self.errmsg.noMailAddress);
     if (_value.length == 0) _is1 = true;
     callback(_is1, _errs);
   };
@@ -560,10 +560,10 @@
    メールアドレス2項目共通
    */
   EfoAnalysis.prototype.mailAddressTwo = function (input, callback){
-    var _this = this;
-    _this.mailAddress(input.eq(0), function (is, errs){
+    var self = this;
+    self.mailAddress(input.eq(0), function (is, errs){
       if (!is) callback(false, errs);
-      else if (input.eq(0).val() !== input.eq(1).val()) callback(false, [_this.errmsg.noMatchMailAddress2]);
+      else if (input.eq(0).val() !== input.eq(1).val()) callback(false, [self.errmsg.noMatchMailAddress2]);
       else callback(true, errs);
     });
   };
@@ -571,22 +571,22 @@
    パスワード
    */
   EfoAnalysis.prototype.password = function (input, callback){
-    var _this = this;
+    var self = this;
     var _value = input.eq(0).val();
     var _errs = [];
     var _leng = _value.length;
     var _is2 = !!(_value.match(/[^0-9A-Za-z@_\-]+/) == null);
     var _is3 = !!(_leng >= 6 && _leng <= 15);
     if (_leng == 0) _is3 = true;//何も入っていなければ通す
-    if (!_is2) _errs.push(_this.errmsg.noUseCodePassword);
-    if (!_is3) _errs.push(_this.errmsg.noCountInPassword);
+    if (!_is2) _errs.push(self.errmsg.noUseCodePassword);
+    if (!_is3) _errs.push(self.errmsg.noCountInPassword);
     callback(!!(_is2 && _is3), _errs);
   };
   /*
    パスワード：2項目見る
    */
   EfoAnalysis.prototype.passwordTwo = function (input, callback){
-    var _this = this;
+    var self = this;
     var _value = input.eq(0).val();
     var _errs = [];
     var _leng = _value.length;
@@ -599,9 +599,9 @@
       callback(true);
       return;
     }
-    if (!_is1) _errs.push(_this.errmsg.noMatchPassword2);
-    if (!_is2) _errs.push(_this.errmsg.noUseCodePassword);
-    if (!_is3) _errs.push(_this.errmsg.noCountInPassword);
+    if (!_is1) _errs.push(self.errmsg.noMatchPassword2);
+    if (!_is2) _errs.push(self.errmsg.noUseCodePassword);
+    if (!_is3) _errs.push(self.errmsg.noCountInPassword);
 
     callback(!!(_is1 && _is2 && _is3), _errs);
   };
@@ -609,20 +609,20 @@
    チェックボックス上限
    */
   EfoAnalysis.prototype.checkboxLess = function (input, callback, num){
-    var _this = this;
+    var self = this;
     var _is = true;
     var _co = 0;
     input.each(function (i, value){
       if ($(this).is(":checked")) _co++;
     });
     if (_co > num) _is = false;
-    callback(_is, [num + _this.errmsg.checkboxLessNum]);
+    callback(_is, [num + self.errmsg.checkboxLessNum]);
   };
   /*
    チェックボックス下限
    */
   EfoAnalysis.prototype.checkboxOver = function (input, callback, num){
-    var _this = this;
+    var self = this;
     var _is = true;
     var _co = 0;
     input.each(function (i, value){
@@ -630,15 +630,15 @@
     });
     if (_co < num) _is = false;
     if (_co == 0) _is = true;
-    callback(_is, [num + _this.errmsg.checkboxOverNum]);
+    callback(_is, [num + self.errmsg.checkboxOverNum]);
   };
   /*
    X文字以内入力
    */
   EfoAnalysis.prototype.countLess = function (input, callback, num){
-    var _this = this;
+    var self = this;
     var _is = true;
-    var _erStr = (num + "") + _this.errmsg.noCountLessNum;
+    var _erStr = (num + "") + self.errmsg.noCountLessNum;
     input.each(function (){
       var _leng = $(this).val().length;
       _is = !!(_leng <= num * 1);
@@ -653,9 +653,9 @@
    X文字以上入力
    */
   EfoAnalysis.prototype.countOver = function (input, callback, num){
-    var _this = this;
+    var self = this;
     var _is = true;
-    var _erStr = (num + "") + _this.errmsg.noCountOverNum;
+    var _erStr = (num + "") + self.errmsg.noCountOverNum;
     input.each(function (){
       var _leng = $(this).val().length;
       _is = !!!(_leng < num * 1 && _leng > 0);
@@ -670,12 +670,12 @@
    整数下限
    */
   EfoAnalysis.prototype.checkIntOver = function (input, callback, num){
-    var _this = this;
+    var self = this;
     var _value = input.eq(0).val();
     if (_value.length == 0) callback(true);
-    else if (_value.match(/[^0-9]/) !== null) callback(false, [_this.errmsg.noNumber]);
+    else if (_value.match(/[^0-9]/) !== null) callback(false, [self.errmsg.noNumber]);
     else {
-      if (_value * 1 < num) callback(false, [num + _this.errmsg.checkOverInt]);
+      if (_value * 1 < num) callback(false, [num + self.errmsg.checkOverInt]);
       else callback(true);
     }
   };
@@ -683,12 +683,12 @@
    整数上限
    */
   EfoAnalysis.prototype.checkIntLess = function (input, callback, num){
-    var _this = this;
+    var self = this;
     var _value = input.eq(0).val();
     if (_value.length == 0) callback(true);
-    else if (_value.match(/[^0-9]/) !== null) callback(false, [_this.errmsg.noNumber]);
+    else if (_value.match(/[^0-9]/) !== null) callback(false, [self.errmsg.noNumber]);
     else {
-      if (_value * 1 > num) callback(false, [num + _this.errmsg.checkLessInt]);
+      if (_value * 1 > num) callback(false, [num + self.errmsg.checkLessInt]);
       else callback(true);
     }
   };
@@ -702,12 +702,12 @@
    数字下限
    */
   EfoAnalysis.prototype.checkNumOver = function (input, callback, num){
-    var _this = this;
+    var self = this;
     var _value = input.eq(0).val();
     if (_value.length == 0) callback(true);
-    else if (_value.match(/[^0-9.]/) !== null) callback(false, [_this.errmsg.noNumber]);
+    else if (_value.match(/[^0-9.]/) !== null) callback(false, [self.errmsg.noNumber]);
     else {
-      if (_value * 1 < num) callback(false, [num + _this.errmsg.checkOverNum]);
+      if (_value * 1 < num) callback(false, [num + self.errmsg.checkOverNum]);
       else callback(true);
     }
   };
@@ -715,12 +715,12 @@
    数字上限
    */
   EfoAnalysis.prototype.checkNumLess = function (input, callback, num){
-    var _this = this;
+    var self = this;
     var _value = input.eq(0).val();
     if (_value.length == 0) callback(true);
-    else if (_value.match(/[^0-9.]/) !== null) callback(false, [_this.errmsg.noNumber]);
+    else if (_value.match(/[^0-9.]/) !== null) callback(false, [self.errmsg.noNumber]);
     else {
-      if (_value * 1 > num) callback(false, [num + _this.errmsg.checkLessNum]);
+      if (_value * 1 > num) callback(false, [num + self.errmsg.checkLessNum]);
       else callback(true);
     }
   };
@@ -728,7 +728,7 @@
    生年月日
    */
   EfoAnalysis.prototype.birthday = function (input, callback){
-    var _this = this;
+    var self = this;
     var _year = input.eq(0).val();
     var _err = [];
     var _dateObj = new Date().getObject();
@@ -748,8 +748,8 @@
     else if (_month == 2 && _day > 28) _is = false;
     if (_year.length == 0 && _month == 0 && _day == 0) _is = true;
     //error
-    if (_isY1 && !_isY2) _err.push(_this.errmsg.noBirthDay_before);
-    else if (!_is) _err.push(_this.errmsg.noBirthDay);
+    if (_isY1 && !_isY2) _err.push(self.errmsg.noBirthDay_before);
+    else if (!_is) _err.push(self.errmsg.noBirthDay);
 
     callback(_is, _err);
   };
@@ -758,64 +758,64 @@
    3桁-4桁
    */
   EfoAnalysis.prototype.zip = function (input, callback){
-    var _this = this;
+    var self = this;
     var _val1 = input.eq(0).val();
     var _val2 = input.eq(1).val();
     var _is1 = !!(_val1.length == 3 && _val1.match(/[^0-9]/) == null);
     var _is2 = !!(_val2.length == 4 && _val2.match(/[^0-9]/) == null);
     var _is = !!(_is1 && _is2);
     if (_val1.length == 0 && _val2.length == 0) _is = true;
-    callback(_is, [_this.errmsg.noZip]);
+    callback(_is, [self.errmsg.noZip]);
   };
   /*
    電話番号
    合計10桁以上11桁以内
    */
   EfoAnalysis.prototype.telephone = function (input, callback){
-    var _this = this;
+    var self = this;
     var _value = input.eq(0).val() + input.eq(1).val() + input.eq(2).val();
     var _is = !!(_value.length >= 10 && _value.length <= 11 && _value.match(/[^0-9]/) == null);
     if (_value.length == 0) _is = true;
-    callback(_is, [_this.errmsg.noTelephone]);
+    callback(_is, [self.errmsg.noTelephone]);
   };
   /*
    携帯電話番号
    合計11桁
    */
   EfoAnalysis.prototype.mobilephone = function (input, callback){
-    var _this = this;
+    var self = this;
     var _value = input.eq(0).val() + input.eq(1).val() + input.eq(2).val();
     var _is = !!(_value.length == 11 && _value.match(/[^0-9]/) == null);
     if (_value.length == 0) _is = true;
-    callback(_is, [_this.errmsg.noTelephone]);
+    callback(_is, [self.errmsg.noTelephone]);
   };
   /*
    氏名欄
    合計9文字以下
    */
   EfoAnalysis.prototype.name = function (input, callback){
-    var _this = this;
+    var self = this;
     var _errs = [];
     var _val1 = input.eq(0).val();
     var _val2 = input.eq(1).val();
     var _is = !!((_val1.length + _val2.length) <= 9);
-    if (!_is) _errs.push(_this.errmsg.noNameCountIn);
+    if (!_is) _errs.push(self.errmsg.noNameCountIn);
     callback(!!_is, _errs);
   };
   /*
    規約の同意
    */
   EfoAnalysis.prototype.isKiyaku = function (input, callback){
-    var _this = this;
+    var self = this;
     var _is = false;
     _is = input.is(":checked");
-    callback(_is, [_this.errmsg.noKiyakuAgree]);
+    callback(_is, [self.errmsg.noKiyakuAgree]);
   };
   /*
    半角英数
    */
   EfoAnalysis.prototype.isHankakuEisu = function (input, callback){
-    var _this = this;
+    var self = this;
     var _val;
     var _is = true;
     input.each(function (i, value){
@@ -823,13 +823,13 @@
       if (_val !== "" && !_val.match(/^[a-zA-Z0-9 ]+$/)) _is = false;
       if (!_is) return false;
     });
-    callback(_is, [_this.errmsg.noHankakuEisu]);
+    callback(_is, [self.errmsg.noHankakuEisu]);
   };
   /*
    半角英数記号
    */
   EfoAnalysis.prototype.isHankakuEisuKigou = function (input, callback){
-    var _this = this;
+    var self = this;
     var _val;
     var _is = true;
     input.each(function (i, value){
@@ -837,7 +837,7 @@
       if (_val !== "" && !_val.match(/^[a-zA-Z0-9 -\/:-@\[-\`\{-\~]+$/)) _is = false;
       if (!_is) return false;
     });
-    callback(_is, [_this.errmsg.noHankakuEisuKigou]);
+    callback(_is, [self.errmsg.noHankakuEisuKigou]);
   };
   /*
    半角→全角：fhconvert.js使用：unicode前提
@@ -851,7 +851,7 @@
    半角英数変換：fhconvert.js使用：unicode前提
    */
   EfoAnalysis.prototype.toHankakuEisu = function (input, callback){
-    var _this = this;
+    var self = this;
     input.each(function (i, value){
       input.val(FHConvert.ftoh(input.val(), {jaCode: true, space: true}));
     });
@@ -861,7 +861,7 @@
    全角カタカナ変換：fhconvert.js使用：unicode前提
    */
   EfoAnalysis.prototype.toZenkakuKK = function (input, callback){
-    var _this = this;
+    var self = this;
     input.each(function (i, value){
       input.val(FHConvert.hkktofkk(FHConvert.hgtokk(input.val())));
     });
@@ -871,7 +871,7 @@
    test
    */
   EfoAnalysis.prototype.test = function (input, callback){
-    var _this = this;
+    var self = this;
     var _is = true;
     callback(_is);
   };
@@ -884,33 +884,33 @@
     this.init.apply(this, arguments);
   };
   EfoErrorMessage.prototype.init = function (){
-    var _this = this;
+    var self = this;
 
-    _this.noInput = "項目に入力してください。";
-    _this.noSelect = "項目から選択してください。";
-    _this.noMailAddress = "正しいメールアドレスを入力してください。";
-    _this.noMatchMailAddress2 = "確認メールアドレスと不一致です。";
-    _this.noMatchPassword2 = "確認パスワードと不一致です。";
-    _this.noUseCodePassword = "半角英数字、@ _ - 以外の文字が入力されています。";
-    _this.noCountInPassword = "半角英数字6〜15文字で入力してください。";
-    _this.noUseCode = "< > ; の記号は半角/全角ともに使用できません。";
-    _this.noBirthDay = "生年月日を正しく入力してください。";
-    _this.noBirthDay_before = "西暦1900年以降の日付を入力してください。";
-    _this.checkboxLessNum = "個以内で選択してください。";
-    _this.checkboxOverNum = "個以上で選択してください。";
-    _this.noNumber = "半角数字を入力してください。";
-    _this.checkLessInt = "以下の整数を入力してください。";
-    _this.checkOverInt = "以上の整数を入力してください。";
-    _this.checkLessNum = "以下を入力してください。";
-    _this.checkOverNum = "以上を入力してください。";
-    _this.noCountOverNum = "文字以上で入力してください。";
-    _this.noCountLessNum = "文字以内で入力してください。";
-    _this.noNameCountIn = "姓名合わせて9文字以内で入力してください。";
-    _this.noZip = "正しい郵便番号を入力してください。";
-    _this.noTelephone = "正しい電話番号を入力してください。";
-    _this.noKiyakuAgree = "規約への同意が必要です。";
-    _this.noHankakuEisu = "半角英数字を入力してください。";
-    _this.noHankakuEisuKigou = "半角英数字、半角記号を入力してください。";
+    self.noInput = "項目に入力してください。";
+    self.noSelect = "項目から選択してください。";
+    self.noMailAddress = "正しいメールアドレスを入力してください。";
+    self.noMatchMailAddress2 = "確認メールアドレスと不一致です。";
+    self.noMatchPassword2 = "確認パスワードと不一致です。";
+    self.noUseCodePassword = "半角英数字、@ _ - 以外の文字が入力されています。";
+    self.noCountInPassword = "半角英数字6〜15文字で入力してください。";
+    self.noUseCode = "< > ; の記号は半角/全角ともに使用できません。";
+    self.noBirthDay = "生年月日を正しく入力してください。";
+    self.noBirthDay_before = "西暦1900年以降の日付を入力してください。";
+    self.checkboxLessNum = "個以内で選択してください。";
+    self.checkboxOverNum = "個以上で選択してください。";
+    self.noNumber = "半角数字を入力してください。";
+    self.checkLessInt = "以下の整数を入力してください。";
+    self.checkOverInt = "以上の整数を入力してください。";
+    self.checkLessNum = "以下を入力してください。";
+    self.checkOverNum = "以上を入力してください。";
+    self.noCountOverNum = "文字以上で入力してください。";
+    self.noCountLessNum = "文字以内で入力してください。";
+    self.noNameCountIn = "姓名合わせて9文字以内で入力してください。";
+    self.noZip = "正しい郵便番号を入力してください。";
+    self.noTelephone = "正しい電話番号を入力してください。";
+    self.noKiyakuAgree = "規約への同意が必要です。";
+    self.noHankakuEisu = "半角英数字を入力してください。";
+    self.noHankakuEisuKigou = "半角英数字、半角記号を入力してください。";
   };
 
   //Loaded

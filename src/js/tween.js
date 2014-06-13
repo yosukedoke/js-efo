@@ -19,32 +19,32 @@
 	*/
 	window.Tween.prototype.init = function(p_tgt, p_isBackface, p_transformOrign, p_isAutoDispose)
 	{
-		var _this = this;
-		_this._arg = arguments;
-		_this.selector = p_tgt;
-		_this.tgt = $(p_tgt);
-		_this.isBackface = !!p_isBackface;
-		_this.transformOrign = p_transformOrign;
-		_this.isAutoDispose = !!p_isAutoDispose;
-		_this.timestamp = "";
-		_this.tid = 0;
-		_this.userInfo = Utils.getUserInfo();
-		_this.tsDuration = 20;//from描画待ち待機時間。16～で安定か？
-		if(_this.tgt.length >1) throw new Error("Tween target too length!");
+		var self = this;
+		self._arg = arguments;
+		self.selector = p_tgt;
+		self.tgt = $(p_tgt);
+		self.isBackface = !!p_isBackface;
+		self.transformOrign = p_transformOrign;
+		self.isAutoDispose = !!p_isAutoDispose;
+		self.timestamp = "";
+		self.tid = 0;
+		self.userInfo = Utils.getUserInfo();
+		self.tsDuration = 20;//from描画待ち待機時間。16～で安定か？
+		if(self.tgt.length >1) throw new Error("Tween target too length!");
 
-		if(_this.userInfo.isIE) _this.bKey = "";
-		else if(_this.userInfo.isSafari || _this.userInfo.isChrome) _this.bKey = "-webkit-";
-		else if(_this.userInfo.isFirefox) _this.bKey = "-moz-";
-		else if(_this.userInfo.isOpera) _this.bKey = "-o-";
-		else _this.bKey = "-webkit-";
+		if(self.userInfo.isIE) self.bKey = "";
+		else if(self.userInfo.isSafari || self.userInfo.isChrome) self.bKey = "-webkit-";
+		else if(self.userInfo.isFirefox) self.bKey = "-moz-";
+		else if(self.userInfo.isOpera) self.bKey = "-o-";
+		else self.bKey = "-webkit-";
 
-		_this.transitionName = _this.bKey + "transition";
-		_this.transformName = _this.bKey + "transform";
-		_this.transformOrignName = _this.bKey + "transform-origin";
-		_this.backfacevisibilityName = _this.bKey+"backface-visibility";
+		self.transitionName = self.bKey + "transition";
+		self.transformName = self.bKey + "transform";
+		self.transformOrignName = self.bKey + "transform-origin";
+		self.backfacevisibilityName = self.bKey+"backface-visibility";
 
-		_this._cssOn = _this._f_createCssOn();
-		_this.tgt.css(_this._cssOn);
+		self._cssOn = self._f_createCssOn();
+		self.tgt.css(self._cssOn);
 	};
 
 	/*直接参照用*/
@@ -126,24 +126,24 @@
 
 	window.Tween.prototype._f_createCssOn = function()
 	{
-		var _this = this;
+		var self = this;
 		var _css = {};
 		_css["-webkit-transform-style"] = "preserve-3d";
-		if(_this.transformOrign) _css[_this.transformOrignName] = _this.transformOrign;
-		if(!_this.isBackface) _css[_this.backfacevisibilityName] = "hidden";
+		if(self.transformOrign) _css[self.transformOrignName] = self.transformOrign;
+		if(!self.isBackface) _css[self.backfacevisibilityName] = "hidden";
 		//_css.overflow = "hidden";//ちらつき防止
 		return _css;
 	};
 
 	window.Tween.prototype._f_createParams = function(p_param)
 	{
-		var _this = this;
+		var self = this;
 		var _param = "";
 		for (key in p_param)
 		{
 			if(key.indexOf("translate") <0 && key.indexOf("skew") <0 && key.indexOf("rotate") <0 && key.indexOf("scale") <0)
 			{
-				_this._cssOn[key] = p_param[key]+"";
+				self._cssOn[key] = p_param[key]+"";
 			}
 			else
 			{
@@ -162,9 +162,9 @@
 
 	window.Tween.prototype.dispose = function()
 	{
-		var _this = this;
-		_this.tgt.find("h1,h2,h3,h4,p").css({"-webkit-transform-style":""});//ちらつき防止
-		_this.tgt.css(_this._cssDispose);
+		var self = this;
+		self.tgt.find("h1,h2,h3,h4,p").css({"-webkit-transform-style":""});//ちらつき防止
+		self.tgt.css(self._cssDispose);
 	};
 
 	/*
@@ -172,47 +172,47 @@
 	 */
 	window.Tween.prototype.to = function(p_to, p_duration, p_transition, p_delay, p_callback, p_noTransitionCallback)
 	{
-		var _this = this;
-		if(!_this.userInfo.isTransition)
+		var self = this;
+		if(!self.userInfo.isTransition)
 		{
-			if(p_noTransitionCallback) p_noTransitionCallback(_this.tgt);
+			if(p_noTransitionCallback) p_noTransitionCallback(self.tgt);
 			return;
 		}
 
-		clearTimeout(_this.tid);
-		_this._cssOn = _this._f_createCssOn();
+		clearTimeout(self.tid);
+		self._cssOn = self._f_createCssOn();
 		if(!p_duration) p_duration = 0;
 		if(!p_transition) p_transition = "linear";
 		if(!p_delay) p_delay = 0;
-		_this._cssOn[_this.transitionName] = "all " + p_duration +"ms " + p_delay +"ms "+ p_transition;
-		_this._cssOn[_this.transformName] = _this._f_createParams(p_to);
+		self._cssOn[self.transitionName] = "all " + p_duration +"ms " + p_delay +"ms "+ p_transition;
+		self._cssOn[self.transformName] = self._f_createParams(p_to);
 
 		function f_onComplete(e)
 		{
-			if($(e.target).attr("data-tweenTimestamp") !== _this.timestamp) return;
-			_this.tgt.unbind(_this._transitionEnd, f_onComplete);
-			_this.timestamp = "";
-			_this.tgt.removeAttr("data-tweenTimestamp");
-			//_this.tgt.find("h1,h2,h3,h4,p").css({"-webkit-transform-style":""});
-			_this.tgt.css(_this._cssOff);
-			if(_this.isAutoDispose) _this.dispose();
-			if(p_callback) p_callback(_this);
+			if($(e.target).attr("data-tweenTimestamp") !== self.timestamp) return;
+			self.tgt.unbind(self._transitionEnd, f_onComplete);
+			self.timestamp = "";
+			self.tgt.removeAttr("data-tweenTimestamp");
+			//self.tgt.find("h1,h2,h3,h4,p").css({"-webkit-transform-style":""});
+			self.tgt.css(self._cssOff);
+			if(self.isAutoDispose) self.dispose();
+			if(p_callback) p_callback(self);
 		}
 
 		if(p_duration <= 0)
 		{
-			_this._cssOn[_this.transitionName] = "";
-			_this.tgt.css(_this._cssOn);
+			self._cssOn[self.transitionName] = "";
+			self.tgt.css(self._cssOn);
 			f_onComplete();
 		}
 		else
 		{
-			_this.tgt.unbind(_this._transitionEnd);
-			_this.tgt.bind(_this._transitionEnd, f_onComplete);
-			_this.tgt.find("h1,h2,h3,h4,p").css({"-webkit-transform-style":"preserve-3d"});//ちらつき防止
-			_this.tgt.css(_this._cssOn);
-			_this.timestamp = _this._createTimestamp();
-			_this.tgt.attr("data-tweenTimestamp", _this.timestamp);
+			self.tgt.unbind(self._transitionEnd);
+			self.tgt.bind(self._transitionEnd, f_onComplete);
+			self.tgt.find("h1,h2,h3,h4,p").css({"-webkit-transform-style":"preserve-3d"});//ちらつき防止
+			self.tgt.css(self._cssOn);
+			self.timestamp = self._createTimestamp();
+			self.tgt.attr("data-tweenTimestamp", self.timestamp);
 		}
 	};
 
@@ -221,25 +221,25 @@
 	 */
 	window.Tween.prototype.fromTo = function(p_from, p_to, p_duration, p_transition, p_delay, p_callback, p_noTransitionCallback)
 	{
-		var _this = this;
-		if(!_this.userInfo.isTransition)
+		var self = this;
+		if(!self.userInfo.isTransition)
 		{
-			if(p_noTransitionCallback) p_noTransitionCallback(_this.tgt);
+			if(p_noTransitionCallback) p_noTransitionCallback(self.tgt);
 			return;
 		}
 
-		_this.setTransform(p_from);
-		clearTimeout(_this.tid);
-		_this.tid = setTimeout(function(){_this.to(p_to, p_duration, p_transition, p_delay, p_callback)}, _this.tsDuration);
+		self.setTransform(p_from);
+		clearTimeout(self.tid);
+		self.tid = setTimeout(function(){self.to(p_to, p_duration, p_transition, p_delay, p_callback)}, self.tsDuration);
 	};
 
 	window.Tween.prototype.setTransform = function(p_prop)
 	{
-		var _this = this;
-		_this._cssOn = _this._f_createCssOn();
-		_this.dispose();
-		_this._cssOn[_this.transformName] = _this._f_createParams(p_prop);
-		_this.tgt.css(_this._cssOn);
+		var self = this;
+		self._cssOn = self._f_createCssOn();
+		self.dispose();
+		self._cssOn[self.transformName] = self._f_createParams(p_prop);
+		self.tgt.css(self._cssOn);
 	};
 
 	//Loaded

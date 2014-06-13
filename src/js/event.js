@@ -100,7 +100,7 @@
 	*/
 	var RotateEventer = function()
 	{
-		var _this = this;
+		var self = this;
 		var _id;
 		var _isAndroid = navigator.userAgent.search(/Android/)!=-1;
 		var _isIOS = navigator.userAgent.search(/iPhone/)!=-1 || navigator.userAgent.search(/iPad/)!=-1 || navigator.userAgent.search(/iPod/)!=-1

@@ -56,12 +56,12 @@
 	 Point
 	 */
 	window.Point = function (p_x, p_y){
-		var _this = this;
-		_this.x = p_x * 1 || 0;
-		_this.y = p_y * 1 || 0;
+		var self = this;
+		self.x = p_x * 1 || 0;
+		self.y = p_y * 1 || 0;
 
-		_this.clone = function (){
-			return new Point(_this.x, _this.y);
+		self.clone = function (){
+			return new Point(self.x, self.y);
 		};
 	};
 
@@ -69,13 +69,13 @@
 	 Rectangle
 	 */
 	window.Rectangle = function (p_x, p_y, p_w, p_h){
-		var _this = this;
-		_this.x = p_x * 1 || 0;
-		_this.y = p_y * 1 || 0;
-		_this.width = p_w * 1 || 0;
-		_this.height = p_h * 1 || 0;
-		_this.clone = function (){
-			return new Rectangle(_this.x, _this.y, _this.width, _this.height);
+		var self = this;
+		self.x = p_x * 1 || 0;
+		self.y = p_y * 1 || 0;
+		self.width = p_w * 1 || 0;
+		self.height = p_h * 1 || 0;
+		self.clone = function (){
+			return new Rectangle(self.x, self.y, self.width, self.height);
 		};
 	};
 
@@ -119,42 +119,42 @@
 	 UserInformation
 	 */
 	_Utils.UA = function (){
-		var _this = this;
+		var self = this;
 		var _appVersion = navigator.appVersion;
 		var _appName = navigator.appName;
 		var _userAgent = navigator.userAgent;
 
-		_this.isWin9X = _appVersion.toLowerCase().search(/windows 98/) != -1;
-		_this.isIE = _userAgent.toLowerCase().search(/msie/) != -1;
-		_this.isIE6 = _userAgent.toLowerCase().search(/msie 6./) != -1;
-		_this.isIE7 = _userAgent.toLowerCase().search(/msie 7./) != -1;
-		_this.isIE8 = _userAgent.toLowerCase().search(/msie 8./) != -1;
-		_this.isIE9 = _userAgent.toLowerCase().search(/msie 9./) != -1;
-		_this.isIE10 = _userAgent.toLowerCase().search(/msie 10./) != -1;
-		_this.isFirefox = _userAgent.toLowerCase().search(/firefox/) != -1;
-		_this.isOpera = _userAgent.toLowerCase().search(/opera/) != -1;
-		if (_this.isOpera) _this.isIE = false;
-		_this.isSafari = _appVersion.toLowerCase().search(/safari/) != -1;
-		_this.isChrome = _appVersion.toLowerCase().search(/chrome/) != -1;
-		if (_this.isChrome) _this.isSafari = false;
-		_this.isIPhone = _userAgent.search(/iPhone/) != -1;
-		_this.isIPad = _userAgent.search(/iPad/) != -1;
-		_this.isIPod = _userAgent.search(/iPod/) != -1;
-		_this.isIOS = _this.isIPhone || _this.isIPad || _this.isIPod;
-		_this.isIOS3 = _userAgent.search(/iPhone OS 3_/) != -1;
-		_this.isIOS4 = _userAgent.search(/iPhone OS 4_/) != -1;
-		_this.isIOS5 = _userAgent.search(/iPhone OS 5_/) != -1;
-		_this.isIOS6 = _userAgent.search(/iPhone OS 6_/) != -1;
-		_this.isAndroid = _userAgent.search(/Android /) != -1;
-		_this.isAndroid1 = _userAgent.search(/Android 1./) != -1;
-		_this.isAndroid2 = _userAgent.search(/Android 2./) != -1;
-		_this.isAndroid3 = _userAgent.search(/Android 3./) != -1;
-		_this.isAndroid4 = _userAgent.search(/Android 4./) != -1;
-		_this.AndroidVer = _this.isAndroid ? _userAgent.match(/Android (\d+(?:\.\d+){1,2});/)[1] : null;
-		_this.isLS = ('localStorage' in window) && window['localStorage'] !== null;
+		self.isWin9X = _appVersion.toLowerCase().search(/windows 98/) != -1;
+		self.isIE = _userAgent.toLowerCase().search(/msie/) != -1;
+		self.isIE6 = _userAgent.toLowerCase().search(/msie 6./) != -1;
+		self.isIE7 = _userAgent.toLowerCase().search(/msie 7./) != -1;
+		self.isIE8 = _userAgent.toLowerCase().search(/msie 8./) != -1;
+		self.isIE9 = _userAgent.toLowerCase().search(/msie 9./) != -1;
+		self.isIE10 = _userAgent.toLowerCase().search(/msie 10./) != -1;
+		self.isFirefox = _userAgent.toLowerCase().search(/firefox/) != -1;
+		self.isOpera = _userAgent.toLowerCase().search(/opera/) != -1;
+		if (self.isOpera) self.isIE = false;
+		self.isSafari = _appVersion.toLowerCase().search(/safari/) != -1;
+		self.isChrome = _appVersion.toLowerCase().search(/chrome/) != -1;
+		if (self.isChrome) self.isSafari = false;
+		self.isIPhone = _userAgent.search(/iPhone/) != -1;
+		self.isIPad = _userAgent.search(/iPad/) != -1;
+		self.isIPod = _userAgent.search(/iPod/) != -1;
+		self.isIOS = self.isIPhone || self.isIPad || self.isIPod;
+		self.isIOS3 = _userAgent.search(/iPhone OS 3_/) != -1;
+		self.isIOS4 = _userAgent.search(/iPhone OS 4_/) != -1;
+		self.isIOS5 = _userAgent.search(/iPhone OS 5_/) != -1;
+		self.isIOS6 = _userAgent.search(/iPhone OS 6_/) != -1;
+		self.isAndroid = _userAgent.search(/Android /) != -1;
+		self.isAndroid1 = _userAgent.search(/Android 1./) != -1;
+		self.isAndroid2 = _userAgent.search(/Android 2./) != -1;
+		self.isAndroid3 = _userAgent.search(/Android 3./) != -1;
+		self.isAndroid4 = _userAgent.search(/Android 4./) != -1;
+		self.AndroidVer = self.isAndroid ? _userAgent.match(/Android (\d+(?:\.\d+){1,2});/)[1] : null;
+		self.isLS = ('localStorage' in window) && window['localStorage'] !== null;
 
 		//transitionの有無
-		_this.isTransition = !!(function (undefined){
+		self.isTransition = !!(function (undefined){
 			var elem = document.createElement("div");
 			var props = [
 				"transition",
@@ -508,31 +508,31 @@
 	 json2.jsが必要
 	 */
 	_Utils.LSConnector = function (p_name){
-		var _this = this;
+		var self = this;
 
 		if (!p_name) return false;
 
-		_this.setValue = function (p_key, p_obj){
+		self.setValue = function (p_key, p_obj){
 			var _obj = f_getJson(p_name) || {};
 			_obj[p_key] = p_obj;
 			f_setJson(p_name, _obj);
 		};
 
-		_this.getValue = function (p_key){
+		self.getValue = function (p_key){
 			var _obj = f_getJson(p_name) || {};
 			return _obj[p_key];
 		};
 
-		_this.getAll = function (){
+		self.getAll = function (){
 			var _obj = f_getJson(p_name);
 			return _obj;
 		};
 
-		_this.clear = function (){
+		self.clear = function (){
 			f_clear();
 		};
 
-		_this.remove = function (){
+		self.remove = function (){
 			f_remove(p_name);
 		};
 
@@ -583,19 +583,19 @@
 	 timeStopper
 	 */
 	window.TimeStopper = function (){
-		var _this = this;
+		var self = this;
 		var _st = 0;
 		var _et = 0;
 
-		_this.time = 0;
+		self.time = 0;
 
-		_this.start = function (){
+		self.start = function (){
 			_et = _st = new Date().getTime();
 		};
 
-		_this.stop = function (){
+		self.stop = function (){
 			_et = new Date().getTime();
-			_this.time = _et - _st;
+			self.time = _et - _st;
 		};
 	};
 
@@ -610,7 +610,7 @@
 		this._data = null;
 	};
 	AjaxConnector.prototype.connect = function (p_url, p_callback, p_dataType, p_isCache, p_method, p_data, p_callName, p_callbackName){
-		var _this = this;
+		var self = this;
 		var _headers = {};
 		if (typeof p_dataType === "undefined" || p_dataType === null) p_dataType = null;
 		if (typeof p_method === "undefined" || p_method === null) p_method = "GET";
@@ -635,7 +635,7 @@
 			jsonp: p_callName,
 			jsonpCallback: p_callbackName,
 			success: function (data){
-				_this._data = data;
+				self._data = data;
 				p_callback(true);
 			},
 			error: function (){
@@ -651,13 +651,13 @@
 	 HTML load
 	 */
 	window.HtmlConnector = function (){
-		var _this = this;
+		var self = this;
 		var _data;
-		_this.getData = function (){
+		self.getData = function (){
 			return _data
 		};
 
-		_this.connect = function (p_url, p_callback){
+		self.connect = function (p_url, p_callback){
 			var _ac = new AjaxConnector();
 			_ac.connect(p_url, function (boo){
 				if (!boo) throw new Error("指定URLはつながりませんでした @" + p_url);
