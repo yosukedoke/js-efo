@@ -6,72 +6,14 @@
 (function(window) {
   'use strict';
 
-  var _Utils = {};
-  window.Utils = _Utils;
-
-  _Utils.UA = function (){
-    var self = this;
-    var _appVersion = navigator.appVersion;
-    var _appName = navigator.appName;
-    var _userAgent = navigator.userAgent;
-
-    self.isWin9X = _appVersion.toLowerCase().search(/windows 98/) != -1;
-    self.isIE = _userAgent.toLowerCase().search(/msie/) != -1;
-    self.isIE6 = _userAgent.toLowerCase().search(/msie 6./) != -1;
-    self.isIE7 = _userAgent.toLowerCase().search(/msie 7./) != -1;
-    self.isIE8 = _userAgent.toLowerCase().search(/msie 8./) != -1;
-    self.isIE9 = _userAgent.toLowerCase().search(/msie 9./) != -1;
-    self.isIE10 = _userAgent.toLowerCase().search(/msie 10./) != -1;
-    self.isFirefox = _userAgent.toLowerCase().search(/firefox/) != -1;
-    self.isOpera = _userAgent.toLowerCase().search(/opera/) != -1;
-    if (self.isOpera) self.isIE = false;
-    self.isSafari = _appVersion.toLowerCase().search(/safari/) != -1;
-    self.isChrome = _appVersion.toLowerCase().search(/chrome/) != -1;
-    if (self.isChrome) self.isSafari = false;
-    self.isIPhone = _userAgent.search(/iPhone/) != -1;
-    self.isIPad = _userAgent.search(/iPad/) != -1;
-    self.isIPod = _userAgent.search(/iPod/) != -1;
-    self.isIOS = self.isIPhone || self.isIPad || self.isIPod;
-    self.isIOS3 = _userAgent.search(/iPhone OS 3_/) != -1;
-    self.isIOS4 = _userAgent.search(/iPhone OS 4_/) != -1;
-    self.isIOS5 = _userAgent.search(/iPhone OS 5_/) != -1;
-    self.isIOS6 = _userAgent.search(/iPhone OS 6_/) != -1;
-    self.isAndroid = _userAgent.search(/Android /) != -1;
-    self.isAndroid1 = _userAgent.search(/Android 1./) != -1;
-    self.isAndroid2 = _userAgent.search(/Android 2./) != -1;
-    self.isAndroid3 = _userAgent.search(/Android 3./) != -1;
-    self.isAndroid4 = _userAgent.search(/Android 4./) != -1;
-    self.AndroidVer = self.isAndroid ? _userAgent.match(/Android (\d+(?:\.\d+){1,2});/)[1] : null;
-    self.isLS = ('localStorage' in window) && window['localStorage'] !== null;
-
-    //transitionの有無
-    self.isTransition = !!(function (undefined){
-      var elem = document.createElement("div");
-      var props = [
-        "transition",
-        "WebkitTransition",
-        "MozTransition",
-        "OTransition"
-      ];
-      for (var i = 0; i < props.length; i++) {
-        if (elem.style[props[i] + "Property"] !== undefined) {
-          return props[i];
-        }
-      }
-      return null;
-    })();
-  };
-  _Utils._ua = new _Utils.UA();
-  _Utils.getUserInfo = function (){
-    return _Utils._ua;
-  };
-
-  _Utils.numAlignment = function (p_num, p_align){
-    var _str = "" + p_num;
-    var _leng = _str.length;
-    var _diff = p_align - _leng;
-    if (_diff > 0) while (_diff--) _str = "0" + _str;
-    return _str;
+  var Utils = window.Utils = {};
+  Utils.zeroFill = function (num, figure){
+    var str = "" + num;
+    var len = Math.max(figure, str.length);
+    while (len > str.length) {
+      str = "0" + str;
+    }
+    return str;
   };
 
 })(this);
@@ -189,12 +131,12 @@
     var _inputs = $("input ,select, textarea");
     var _count = 0;
     var _isAllcrawl = true;
-    var _ui = Utils.getUserInfo();
-    var _time = _ui.isAndroid ? 1000 : 500;//項目自動入力されるまでの待機時間
+    var isAndroid = navigator.userAgent.toLowerCase().search(/android /) != -1;
+    var _time = isAndroid ? 1000 : 500;//項目自動入力されるまでの待機時間
 
     self.nodes = [];
     self.efofuncs = new EfoAnalysis();
-    self.isBodyEfoError;
+    self.isBodyEfoError = false;
     self.analysis = analysis;
     self.addNode = addNode;
     self.crawlAnalysis = crawlAnalysis;
@@ -805,7 +747,7 @@
     var _err = [];
     var _dateObj = new Date().getObject();
     var _date = (_dateObj.year + "" + _dateObj.month + "" + _dateObj.day + "") * 1;
-    var _inputDate = (_year + "" + Utils.numAlignment(input.eq(1).val(), 2) + "" + Utils.numAlignment(input.eq(2).val(), 2)) * 1;
+    var _inputDate = (_year + "" + Utils.zeroFill(input.eq(1).val(), 2) + "" + Utils.zeroFill(input.eq(2).val(), 2)) * 1;
     var _isY1 = !!(_year.match(/[^0-9]/) == null && _date >= _inputDate);//西暦
     var _isY2 = !!(_year * 1 >= 1900);//年数下限
     var _month = input.eq(1).find("option:selected").val() * 1;
