@@ -3,20 +3,7 @@
  (c) 2014 Hiroaki Nakamura
  MIT License
  */
-(function(window) {
-  'use strict';
 
-  var Utils = window.Utils = {};
-  Utils.zeroFill = function (num, figure){
-    var str = "" + num;
-    var len = Math.max(figure, str.length);
-    while (len > str.length) {
-      str = "0" + str;
-    }
-    return str;
-  };
-
-})(this);
 (function($, undefined) {
   $.fn.japaneseInputChange = function(selector, delay, handler) {
     var readyToSetTimer = true,
@@ -99,7 +86,21 @@
   };
 }(jQuery));
 
-(function ($, undefined){
+(function(window) {
+  'use strict';
+
+  var Utils = window.Utils = {};
+  Utils.zeroFill = function (num, figure){
+    var str = "" + num;
+    var len = Math.max(figure, str.length);
+    while (len > str.length) {
+      str = "0" + str;
+    }
+    return str;
+  };
+
+})(this);
+(function (window, $, undefined){
   /*
    *EFO 1.0.2
    * */
@@ -1002,4 +1003,4 @@
       callback(_is, _arrArr);
     };
   });
-})(jQuery);
+})(this, jQuery);
