@@ -119,7 +119,8 @@
   Efo.classNames = {
     EFO_ATTR_SERVER_ERROR:"efo-serverError",//サーバー側でエラーが有った場合、bodyにefo-serverErrorがつく想定
     EFO_ATTR_ICON : "efo-icon",
-    EFO_ATTR_ERROR : "efo-error"
+    EFO_ATTR_ERROR : "efo-error",
+    EFO_ATTR_ERROR_MSG : "efo-errorString"
   };
   Efo.options = {
     EFO_IS_DEPEND_DISPLAY:"data-isDependDisplay",
@@ -133,7 +134,7 @@
     var isAndroid = navigator.userAgent.toLowerCase().search(/android /) != -1;
     var _time = isAndroid ? 1000 : 500;//項目自動入力されるまでの待機時間
 
-    self.nodes = [];
+    var nodes = [];
     self.efofuncs = new EfoAnalysis();
     self.isBodyEfoError = false;
     self.analysis = analysis;
@@ -175,19 +176,19 @@
     //追加
     function addNode(efokey){
       $inputElements = $("input ,select, textarea");
-      var _node;
-      var _keys = $inputElements.filter('['+Efo.attrNames.EFO_ATTR_KEY+'="' + efokey + '"]['+Efo.attrNames.EFO_ATTR_FUNCS+']');
-      _keys.each(function (i, element){
-        _node = _addNode(element);
+      var node;
+      var $elements = $inputElements.filter('['+Efo.attrNames.EFO_ATTR_KEY+'="' + efokey + '"]['+Efo.attrNames.EFO_ATTR_FUNCS+']');
+      $elements.each(function (i, element){
+        node = _addNode(element);
       });
-      return _node;
+      return node;
     }
 
     //自動追加
     function autoAddNode(){
       $inputElements = $("input ,select, textarea");
-      var _keys = $inputElements.filter("["+Efo.attrNames.EFO_ATTR_KEY+"]["+Efo.attrNames.EFO_ATTR_FUNCS+"]:not(["+Efo.options.EFO_IS_AUTO_ADD+"='false'])");
-      _keys.each(function (i,element){
+      var $elements = $inputElements.filter("["+Efo.attrNames.EFO_ATTR_KEY+"]["+Efo.attrNames.EFO_ATTR_FUNCS+"]:not(["+Efo.options.EFO_IS_AUTO_ADD+"='false'])");
+      $elements.each(function (i,element){
         _addNode(element);
       });
       self.dispatchEvent({type: Efo.events.EFO_AUTOADD_COMPLETE});
@@ -196,44 +197,46 @@
     function _addNode(element){
       var $element = $(element);
       var validateFuncNames = $element.attr(Efo.attrNames.EFO_ATTR_FUNCS).split(" ");
-      var _key = $element.attr(Efo.attrNames.EFO_ATTR_KEY);
-      var _nodeInputs = $inputElements.filter('['+Efo.attrNames.EFO_ATTR_KEY+'="' + _key + '"]');
-      var _isDependDisplay = $element.attr(Efo.options.EFO_IS_DEPEND_DISPLAY);//非表示で走査しないかどうか：表示で走査に影響を与えるかどうか
+      var key = $element.attr(Efo.attrNames.EFO_ATTR_KEY);
+      var $inputs = $inputElements.filter('['+Efo.attrNames.EFO_ATTR_KEY+'="' + key + '"]');
+      var isDependDisplay = $element.attr(Efo.options.EFO_IS_DEPEND_DISPLAY);//非表示で走査しないかどうか：表示で走査に影響を与えるかどうか
 
-      _isDependDisplay = _isDependDisplay === undefined ? true : !!_isDependDisplay;
+      isDependDisplay = isDependDisplay === undefined ? true : !!isDependDisplay;
 
       if (!validateFuncNames || validateFuncNames.length || validateFuncNames[0] === "") {
         return new Error("no funcs");
       }
 
       var _nodeInfo = {
-        key: _key,
+        key: key,
         funcs: validateFuncNames,
-        inputs: _nodeInputs,
-        isDependDisplay: _isDependDisplay
+        inputs: $inputs,
+        isDependDisplay: isDependDisplay
       };
-      var _node = new EfoNode(_nodeInfo, onAnalyzeCallback);
-      self.nodes.push(_node);
+      var node = new EfoNode(_nodeInfo, onAnalyzeCallback);
+      nodes.push(node);
 
-      return _node;
+      return node;
     }
 
     function analysis(){
       var _isClear = true;
       var _nodeData = [];
       var _falseNum = 0;
-      $.each(self.nodes, function (i, value){
+      $.each(nodes, function (i, node){
         //表示の可否
-        var _isDisplay = true;
-        var _tgt = value.inputs.filter("["+Efo.attrNames.EFO_ATTR_FUNCS+"]");
-        if (value.isDependDisplay) {
-          _tgt.parents().each(function (i, value){
-            _isDisplay = !!!($(value).css("display") == "none");
-            if (!_isDisplay) return false;
+        var isDisplay = true;
+        var $element = node.inputs.filter("["+Efo.attrNames.EFO_ATTR_FUNCS+"]");
+        if (node.isDependDisplay) {
+          isDisplay = $element.parents().every(function (i, value){
+            return $(value).css("display") !== "none";
           });
         }
-        if (_isDisplay) _nodeData.push(value);
-        if (!value.isClear && _isDisplay) {
+        if (isDisplay) {
+          _nodeData.push(node);
+        }
+
+        if (!node.isClear && isDisplay) {
           _isClear = false;
           _falseNum++;
         }
@@ -250,7 +253,7 @@
     function crawlAnalysis(isErrorOutput){
       isErrorOutput = !!isErrorOutput;
       isReady = false;
-      $.each(self.nodes, function (i, value){
+      $.each(nodes, function (i, value){
         value.analysis(isErrorOutput);
       });
     }
@@ -259,9 +262,8 @@
      消去：番号
      */
     function removeNodeAt(index){
-      self.nodes[index].dispose();
-      //self.views[num].removeEventListener("onHaveSubQChange", self.f_onHaveSubQChange);
-      self.nodes.splice(index, 1);
+      nodes[index].dispose();
+      nodes.splice(index, 1);
     }
 
     /*
@@ -269,10 +271,10 @@
      */
     function removeNodeByKey(key){
       var self = this;
-      $.each(self.nodes, function (i, value){
+      $.each(nodes, function (i, value){
         if (nodes.key == key) {
-          self.nodes[i].dispose();
-          self.nodes.splice(i, 1);
+          nodes[i].dispose();
+          nodes.splice(i, 1);
           return false;
         }
       });
@@ -281,7 +283,7 @@
     /*
      */
     function dispose(){
-      $.each(self.nodes, function (i, value){
+      $.each(nodes, function (i, value){
         value.dispose();
       });
     }
@@ -297,24 +299,60 @@
    * */
   EfoNode.prototype.init = function (nodeInfo, callback){
     var self = this;
-    var _count = 0;
-    var validateFuncNames = window.efo.efofuncs;
-    var _errorStrNode;
+    var validator = window.efo.efofuncs;
+    var $errorMsg;
+    self.errorStrs = [];
     self.funcs = nodeInfo.funcs;
     self.inputs = nodeInfo.inputs;
     self.key = nodeInfo.key;
     self.isDependDisplay = nodeInfo.isDependDisplay;
     self.options = nodeInfo.options;
-    self.errorStrs = [];
+
     self.errorNode = $("."+Efo.classNames.EFO_ATTR_ERROR+'['+Efo.attrNames.EFO_ATTR_KEY+'="' + self.key + '"]');
-    if (self.errorNode) _errorStrNode = self.errorNode.find(".efo-errorString");
+    if (self.errorNode) {
+      $errorMsg = self.errorNode.find("."+Efo.classNames.EFO_ATTR_ERROR_MSG);
+    }
     self.iconNode = $("."+Efo.classNames.EFO_ATTR_ICON+'['+Efo.attrNames.EFO_ATTR_KEY+'="' + self.key + '"]');
+
     self.analysis = analysis;
     self.dispose = dispose;
 
     EventDispatcher.initialize(self);
+
     window.efo.addEventListener(Efo.events.EFO_AUTOADD_COMPLETE, onAutoAddComplete);
-    setTrigger();
+
+    /*
+     イベント設定
+     */
+    var interval = 500;
+    self.inputs.each(function (){
+      var $target = $(this);
+      var inputType = "";
+      var tagName = $target.get(0).tagName.toLowerCase();
+      
+      if (tagName == "input") {
+        inputType = $target.attr("type");
+        if (inputType == "text" || inputType == "password") {
+          $target.unbind("blur", onInputComplete).blur(onInputComplete);
+          $target.unbind().japaneseInputChange(interval, onInputComplete);
+          $target.unbind("click", onInputComplete).click(onInputComplete);
+        }
+        else if (inputType == "checkbox" || inputType == "radio") {
+          $target.unbind("change", onInputComplete).change(onInputComplete);
+        }
+      }
+      else if (tagName == "select") {
+        $target.unbind("change", onInputComplete).change(onInputComplete);
+      }
+      else if (tagName == "textarea") {
+        $target.unbind("blur", onInputComplete).blur(onInputComplete);
+        $target.unbind().japaneseInputChange(interval, onInputComplete);
+        $target.unbind("click", onInputComplete).click(onInputComplete);
+      }
+
+      $target.unbind("focus", onFocus).focus(onFocus);
+      $target.unbind("blur", onBlur).blur(onBlur);
+    });
 
     function onAutoAddComplete(){
       if(!window.efo.isBodyEfoError){
@@ -325,71 +363,17 @@
       }
     }
 
-    /*
-     イベントトリガー
-     */
-    function setTrigger(){
-      var _tgt;
-      var _tagName;
-      var _type;
-      var _interval = 500;
-      self.inputs.each(function (){
-        _tgt = $(this);
-        _type = "";
-        _tagName = _tgt.get(0).tagName.toLowerCase();
-        if (_tagName == "input") {
-          _type = _tgt.attr("type");
-          if (_type == "text" || _type == "password") {
-            _tgt.unbind("blur", onInputComplete).blur(onInputComplete);
-            _tgt.unbind().japaneseInputChange(_interval, onInputComplete);
-            //_tgt.unbind("keyup", onkey).bind("keyup", onkey);
-            _tgt.unbind("click", onInputComplete).click(onInputComplete);
-          }
-          else if (_type == "checkbox" || _type == "radio") {
-            _tgt.unbind("change", onInputComplete).change(onInputComplete);
-          }
-        }
-        else if (_tagName == "select") {
-          _tgt.unbind("change", onInputComplete).change(onInputComplete);
-        }
-        else if (_tagName == "textarea") {
-          _tgt.unbind("blur", onInputComplete).blur(onInputComplete);
-          //_tgt.unbind("keyup", onkey).bind("keyup", onkey);
-          _tgt.unbind().japaneseInputChange(_interval, onInputComplete);
-          _tgt.unbind("click", onInputComplete).click(onInputComplete);
-        }
-
-        _tgt.unbind("focus", onFocus).focus(onFocus);
-        _tgt.unbind("blur", onBlur).blur(onBlur);
-      });
-    }
-    /*
-    * 変換系かどうか
-    * */
-    function hasTransleteFunc(){
-      var _isTranslate = false;
-      $.each(self.funcs, function(i, value){
-        if(value === "toZenkakuKK" || value === "toHankakuEisu"){
-          _isTranslate = true;
-          return false;
-        }
-      });
-      return _isTranslate;
-    }
-
     //入力終わり
-    function onInputComplete(e){
+    function onInputComplete(){
       analysis(true);
     }
 
-    function onFocus(e){
-      self.inputs.removeClass("efo-inputError").removeClass("efo-inputFocus").addClass("efo-inputFocus");
-      //self.dispatchEvent({type:Efo.events.EFO_NODE_FOCUS, node:self});
+    function onFocus(){
+      self.inputs.removeClass("efo-inputError").addClass("efo-inputFocus");
     }
 
-    function onBlur(e){
+    function onBlur(){
       self.inputs.removeClass("efo-inputFocus");
-      //self.dispatchEvent({type:Efo.events.EFO_NODE_BLUR, node:self});
     }
 
     /*
@@ -397,90 +381,91 @@
      isErrorOutput		エラー出力するかどうか
      */
     function analysis(isErrorOutput){
-      if(isErrorOutput == undefined) isErrorOutput = true;
+      if(isErrorOutput === undefined) isErrorOutput = true;
       isErrorOutput = !!isErrorOutput;
-      _count = 0;
+
+      var count = 0;
       self.errorStrs = [];
-      self.isClear = true;
-      var _num;
-      $.each(self.funcs, function (i, value){
-        //funcの振り分け
-        var _funcName;
-        var _num;
-        if (value.search(/[0-9]+$/) > 0) {
-          _funcName = value.replace(/[0-9]+$/, "");
-          _num = value.match(/[0-9]+$/) * 1;
-          validateFuncNames[_funcName](self.inputs, anaComplete, _num);
+      self.isClear = false;
+      $.each(self.funcs, function (i, funcName){
+        var value;
+        if (funcName.search(/[0-9]+$/) > 0) {
+          value = parseInt(funcName.match(/[0-9]+$/)[0]);
+          funcName = funcName.replace(/[0-9]+$/, "");
+          validator[funcName](self.inputs, anaComplete, value);
         }
-        else if (value.length) {
-          validateFuncNames[value](self.inputs, anaComplete);
+        else if (!!funcName) {
+          validator[funcName](self.inputs, anaComplete);
         }
-        else anaComplete();
+        else {
+          anaComplete();
+        }
       });
 
       //解析終了
-      function anaComplete(is, errs){
-        _count++;
-        if (!is) {
-          self.isClear = false;
-          if (errs.length > 0 && isErrorOutput) {
-            $.each(errs, function (i, value){
-              self.errorStrs.push(value);
-            });
-          }
+      function anaComplete(isValid, errs){
+        count++;
+
+        self.isClear = self.isClear && isValid;
+
+        if (!isValid && isErrorOutput && !!errs) {
+          self.errorStrs.push.apply(self.errorStrs, errs);
         }
-        if (_count >= self.funcs.length) {
-          changeIconProperty();
-          changeInputsProperty(isErrorOutput);
-          if (isErrorOutput){
-            repetitionAna();
-            changeErrorProperty();
-            setErrorString();
-          }
-          if (callback) callback(self);
+
+        if (count >= self.funcs.length) {
+          onAllAnalysisCompleted(isErrorOutput);
         }
       }
     }
+    function onAllAnalysisCompleted(isErrorOutput) {
+      //アイコン要素の変化
+//          changeIconProperty();
+      if (self.iconNode.length) {
+        self.iconNode.removeClass("efo-iconTrue efo-iconFalse");
 
-    //Input要素の変化
-    function changeInputsProperty(isErrorOutput){
-      isErrorOutput = !!isErrorOutput;
+        if (self.isClear) {
+          self.iconNode.addClass("efo-iconTrue");
+        }
+        else {
+          self.iconNode.addClass("efo-iconFalse");
+        }
+      }
+
+      //Input要素の変化
+//          changeInputsProperty(isErrorOutput);
       self.inputs.removeClass("efo-inputError");
-      if (!self.isClear && isErrorOutput) self.inputs.addClass("efo-inputError");
-    }
 
-    //アイコン要素の変化
-    function changeIconProperty(){
-      if (!self.iconNode.length) return;
-      self.iconNode.removeClass("efo-iconTrue").removeClass("efo-iconFalse");
-      if (self.isClear) {
-        self.iconNode.addClass("efo-iconTrue");
-      }
-      else {
-        self.iconNode.addClass("efo-iconFalse");
-      }
-    }
+      if (isErrorOutput){
+        if (!self.isClear) {
+          self.inputs.addClass("efo-inputError");
+        }
 
-    //エラー要素の変化
-    function changeErrorProperty(){
-      if (!self.errorNode.length) return;
-      self.errorNode.removeClass("efo-error");
-      if (!self.isClear) {
-        self.errorNode.addClass("efo-error");
-      }
-    }
+        repetitionAna();
 
-    //エラー文言の変化
-    function setErrorString(){
-      if (!_errorStrNode) return;
-      var _errtext = "";
-      if (!self.isClear) {
-        $.each(self.errorStrs, function (i, value){
-          if (i == 0) _errtext += value;
-          else _errtext += "</br>" + value;
-        });
+        //エラー要素の変化
+//            changeErrorProperty();
+        if (self.errorNode.length) {
+          self.errorNode.removeClass("efo-error");
+
+          if (!self.isClear) {
+            self.errorNode.addClass("efo-error");
+          }
+        }
+        //エラー文言の変化
+//            setErrorString();
+        var _errtext = "";
+
+        if ($errorMsg && !self.isClear) {
+          $.each(self.errorStrs, function (i, value){
+            if (i == 0) _errtext += value;
+            else _errtext += "</br>" + value;
+          });
+          $errorMsg.html(_errtext);
+        }
       }
-      _errorStrNode.html(_errtext);
+      if (callback) {
+        callback(self);
+      }
     }
 
     //再帰：エラー文言の被りを修正
