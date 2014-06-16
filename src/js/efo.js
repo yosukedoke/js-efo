@@ -128,8 +128,8 @@
   Efo.prototype.init = function (){
     var self = this;
     var $inputElements = $("input ,select, textarea");
-    var _count = 0;
-    var _isAllcrawl = true;
+    var numReadyNodes = 0;
+    var isReady = false;
     var isAndroid = navigator.userAgent.toLowerCase().search(/android /) != -1;
     var _time = isAndroid ? 1000 : 500;//項目自動入力されるまでの待機時間
 
@@ -139,7 +139,7 @@
     self.analysis = analysis;
     self.addNode = addNode;
     self.crawlAnalysis = crawlAnalysis;
-    self.removeNodeByNum = removeNodeByNum;
+    self.removeNodeByNum = removeNodeAt;
     self.removeNodeByKey = removeNodeByKey;
     self.dispose = dispose;
     self.autoAddNode = autoAddNode;
@@ -159,12 +159,12 @@
     function onAnalyzeCallback(efonode){
       self.dispatchEvent({type: Efo.events.EFO_NODE_ANALYSIS_COMPLETE, isClear: efonode.isClear, errorStrs: efonode.errorStrs, node: efonode});
       //クロールしてからanalysisする
-      if (_isAllcrawl) {
-        _count++;
-        if (_count >= self.nodes.length) {
-          _count = 0;
+      if (!isReady) {
+        numReadyNodes++;
+        if (numReadyNodes >= self.nodes.length) {
+          numReadyNodes = 0;
+          isReady = true;
           self.analysis();
-          _isAllcrawl = false;
         }
       }
       else {
@@ -195,20 +195,20 @@
 
     function _addNode(element){
       var $element = $(element);
-      var _funcs = $element.attr(Efo.attrNames.EFO_ATTR_FUNCS).split(" ");
+      var validateFuncNames = $element.attr(Efo.attrNames.EFO_ATTR_FUNCS).split(" ");
       var _key = $element.attr(Efo.attrNames.EFO_ATTR_KEY);
       var _nodeInputs = $inputElements.filter('['+Efo.attrNames.EFO_ATTR_KEY+'="' + _key + '"]');
       var _isDependDisplay = $element.attr(Efo.options.EFO_IS_DEPEND_DISPLAY);//非表示で走査しないかどうか：表示で走査に影響を与えるかどうか
 
       _isDependDisplay = _isDependDisplay === undefined ? true : !!_isDependDisplay;
 
-      if (!_funcs || _funcs.length || _funcs[0] === "") {
+      if (!validateFuncNames || validateFuncNames.length || validateFuncNames[0] === "") {
         return new Error("no funcs");
       }
 
       var _nodeInfo = {
         key: _key,
-        funcs: _funcs,
+        funcs: validateFuncNames,
         inputs: _nodeInputs,
         isDependDisplay: _isDependDisplay
       };
@@ -249,7 +249,7 @@
      */
     function crawlAnalysis(isErrorOutput){
       isErrorOutput = !!isErrorOutput;
-      _isAllcrawl = true;
+      isReady = false;
       $.each(self.nodes, function (i, value){
         value.analysis(isErrorOutput);
       });
@@ -258,10 +258,10 @@
     /*
      消去：番号
      */
-    function removeNodeByNum(num){
-      self.nodes[num].dispose();
+    function removeNodeAt(index){
+      self.nodes[index].dispose();
       //self.views[num].removeEventListener("onHaveSubQChange", self.f_onHaveSubQChange);
-      self.nodes.splice(num, 1);
+      self.nodes.splice(index, 1);
     }
 
     /*
@@ -298,7 +298,7 @@
   EfoNode.prototype.init = function (nodeInfo, callback){
     var self = this;
     var _count = 0;
-    var _ana = window.efo.efofuncs;
+    var validateFuncNames = window.efo.efofuncs;
     var _errorStrNode;
     self.funcs = nodeInfo.funcs;
     self.inputs = nodeInfo.inputs;
@@ -410,9 +410,11 @@
         if (value.search(/[0-9]+$/) > 0) {
           _funcName = value.replace(/[0-9]+$/, "");
           _num = value.match(/[0-9]+$/) * 1;
-          _ana[_funcName](self.inputs, anaComplete, _num);
+          validateFuncNames[_funcName](self.inputs, anaComplete, _num);
         }
-        else if (value.length) _ana[value](self.inputs, anaComplete);
+        else if (value.length) {
+          validateFuncNames[value](self.inputs, anaComplete);
+        }
         else anaComplete();
       });
 
