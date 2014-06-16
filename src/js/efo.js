@@ -194,7 +194,7 @@
       self.dispatchEvent({type: Efo.events.EFO_AUTOADD_COMPLETE});
     }
 
-    function _addNode(value, is){
+    function _addNode(value){
       var _funcsStr = $(value).attr(Efo.attrNames.EFO_ATTR_FUNCS);
       var _funcs = _funcsStr.split(" ");
       var _key = $(value).attr(Efo.attrNames.EFO_ATTR_KEY);
@@ -209,11 +209,10 @@
       }
 
       var _nodeInfo = {key: _key, funcs: _funcs, inputs: _nodeInputs, isDependDisplay: _isDependDisplay};
-      var _is = !!is;//初期状態
       var _node;
       if (!_funcs[0] == "") {
         //Utils.trace("add @" + _key);
-        _node = new EfoNode(_nodeInfo, _is, onAnalyzeCallback);
+        _node = new EfoNode(_nodeInfo, onAnalyzeCallback);
         self.nodes.push(_node);
         return _node;
       }
@@ -297,7 +296,7 @@
    * is            初期状態
    * callback      コールバックファンクション
    * */
-  EfoNode.prototype.init = function (nodeInfo, is, callback){
+  EfoNode.prototype.init = function (nodeInfo, callback){
     var self = this;
     var _count = 0;
     var _ana = window.efo.efofuncs;
