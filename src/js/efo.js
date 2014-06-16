@@ -127,7 +127,7 @@
   };
   Efo.prototype.init = function (){
     var self = this;
-    var _inputs = $("input ,select, textarea");
+    var $inputElements = $("input ,select, textarea");
     var _count = 0;
     var _isAllcrawl = true;
     var isAndroid = navigator.userAgent.toLowerCase().search(/android /) != -1;
@@ -174,49 +174,48 @@
 
     //追加
     function addNode(efokey){
-      _inputs = $("input ,select, textarea");
+      $inputElements = $("input ,select, textarea");
       var _node;
-      var _keys = _inputs.filter('['+Efo.attrNames.EFO_ATTR_KEY+'="' + efokey + '"]['+Efo.attrNames.EFO_ATTR_FUNCS+']');
-      _keys.each(function (i, value){
-        _node = _addNode(value);
+      var _keys = $inputElements.filter('['+Efo.attrNames.EFO_ATTR_KEY+'="' + efokey + '"]['+Efo.attrNames.EFO_ATTR_FUNCS+']');
+      _keys.each(function (i, element){
+        _node = _addNode(element);
       });
       return _node;
     }
 
     //自動追加
     function autoAddNode(){
-      _inputs = $("input ,select, textarea");
-      var _keys = _inputs.filter("["+Efo.attrNames.EFO_ATTR_KEY+"]["+Efo.attrNames.EFO_ATTR_FUNCS+"]:not(["+Efo.options.EFO_IS_AUTO_ADD+"='false'])");
-      var _node;
-      _keys.each(function (i, value){
-        _node = _addNode(value);
+      $inputElements = $("input ,select, textarea");
+      var _keys = $inputElements.filter("["+Efo.attrNames.EFO_ATTR_KEY+"]["+Efo.attrNames.EFO_ATTR_FUNCS+"]:not(["+Efo.options.EFO_IS_AUTO_ADD+"='false'])");
+      _keys.each(function (i,element){
+        _addNode(element);
       });
       self.dispatchEvent({type: Efo.events.EFO_AUTOADD_COMPLETE});
     }
 
-    function _addNode(value){
-      var _funcsStr = $(value).attr(Efo.attrNames.EFO_ATTR_FUNCS);
-      var _funcs = _funcsStr.split(" ");
-      var _key = $(value).attr(Efo.attrNames.EFO_ATTR_KEY);
-      var _nodeInputs = _inputs.filter('['+Efo.attrNames.EFO_ATTR_KEY+'="' + _key + '"]');
-      var _isDependDisplay = $(value).attr(Efo.options.EFO_IS_DEPEND_DISPLAY);//非表示で走査しないかどうか：表示で走査に影響を与えるかどうか
+    function _addNode(element){
+      var $element = $(element);
+      var _funcs = $element.attr(Efo.attrNames.EFO_ATTR_FUNCS).split(" ");
+      var _key = $element.attr(Efo.attrNames.EFO_ATTR_KEY);
+      var _nodeInputs = $inputElements.filter('['+Efo.attrNames.EFO_ATTR_KEY+'="' + _key + '"]');
+      var _isDependDisplay = $element.attr(Efo.options.EFO_IS_DEPEND_DISPLAY);//非表示で走査しないかどうか：表示で走査に影響を与えるかどうか
 
-      if(_isDependDisplay == undefined){
-        _isDependDisplay = true;
-      }
-      else{
-        _isDependDisplay = !!_isDependDisplay;
+      _isDependDisplay = _isDependDisplay === undefined ? true : !!_isDependDisplay;
+
+      if (!_funcs || _funcs.length || _funcs[0] === "") {
+        return new Error("no funcs");
       }
 
-      var _nodeInfo = {key: _key, funcs: _funcs, inputs: _nodeInputs, isDependDisplay: _isDependDisplay};
-      var _node;
-      if (!_funcs[0] == "") {
-        //Utils.trace("add @" + _key);
-        _node = new EfoNode(_nodeInfo, onAnalyzeCallback);
-        self.nodes.push(_node);
-        return _node;
-      }
-      else return new Error("no funcs");
+      var _nodeInfo = {
+        key: _key,
+        funcs: _funcs,
+        inputs: _nodeInputs,
+        isDependDisplay: _isDependDisplay
+      };
+      var _node = new EfoNode(_nodeInfo, onAnalyzeCallback);
+      self.nodes.push(_node);
+
+      return _node;
     }
 
     function analysis(){
